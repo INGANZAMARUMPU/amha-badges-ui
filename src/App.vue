@@ -1,24 +1,25 @@
 <template>
-<div id="parent" v-if="main_store.user != null">
-  <header>
-    <img alt="Vue logo" class="logo" src="/logo.jpeg" width="125" height="125" />
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-  </header>
+<div id="parent" v-if="$store.state.user != null">
   <RouterView />
 </div>
 
 <Login v-else></Login>
 </template>
 
-<script setup>
-  import { RouterLink, RouterView } from 'vue-router'
-  import Login from './views/Login.vue'
-  import { useMainStore } from './stores/main.js'
+<script>
+import { RouterLink, RouterView } from 'vue-router'
+import Login from './views/Login.vue'
 
-  const main_store = useMainStore()
+export default {
+  components: {
+    RouterLink,
+    RouterView,
+    Login,
+  },
+  mounted() {
+    this.$store.state.user = JSON.parse(localStorage.getItem('user')) || null
+  },
+}
 </script>
 
 <style src="@/style.css">

@@ -120,19 +120,39 @@
     </div>
   </div>
 </template>
-<script setup>
+<script>
 import { ref } from 'vue'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-vue-next'
+import axios from 'axios'
 
-const showPassword = ref(false)
-const username = ref('')
-const password = ref('')
-
-const handleLogin = () => {
-  let data = {
-    username: username.value,
-    password: password.value,
+export default {
+  components: {
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+  },
+  data() {
+    return {
+      showPassword: false,
+      username: '',
+      password: '',
+    }
+  },
+  methods: {
+    handleLogin() {
+      let data = {
+        username: this.username,
+        password: this.password,
+      }
+      axios.post('http://127.0.0.1:8000/personnel/login/', data).then((response) => {
+        this.$store.state.user = response.data
+        localStorage.setItem('user', JSON.stringify(response.data))
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+    }
   }
-  alert(JSON.stringify(data))
 }
 </script>
