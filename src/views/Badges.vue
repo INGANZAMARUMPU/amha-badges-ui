@@ -205,7 +205,7 @@
           class="group overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] transition duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:bg-white/[0.05] hover:shadow-2xl hover:shadow-indigo-500/5"
         >
           <!-- Photo -->
-          <div class="relative h-52 overflow-hidden bg-slate-900">
+          <div class="relative h-64 overflow-hidden bg-slate-900">
             <img
               v-if="person.photo"
               :src="person.photo"
@@ -389,11 +389,9 @@ export default {
         .catch((error) => {
           console.error(error)
           this.error = 'Impossible de charger les membres. Veuillez réessayer.'
-          if (error.response && error.response.status === 401) {
-            // Token expiré ou invalide, rediriger vers la page de connexion
-            // localStorage.removeItem('user')
-            // let main_store = useMainStore()
-            // main_store.user = null
+          if (error.response && error.response.data.code === "token_not_valid") {
+            localStorage.removeItem('user')
+            this.$store.state.user = null
           }
         }).finally(() => {
           this.loading = false

@@ -1,7 +1,14 @@
 <script>
-import axios from 'axios';
-import { X, User, BriefcaseBusiness, LoaderCircle, ShieldCheck, AlertCircle } from 'lucide-vue-next'
-import QRCode from 'qrcode'
+import {
+  X,
+  User,
+  Mail,
+  Phone,
+  BriefcaseBusiness,
+  LoaderCircle,
+  ShieldCheck,
+  AlertCircle,
+} from 'lucide-vue-next'
 
 export default {
   name: 'BadgeDialog',
@@ -9,6 +16,8 @@ export default {
   components: {
     X,
     User,
+    Mail,
+    Phone,
     BriefcaseBusiness,
     LoaderCircle,
     ShieldCheck,
@@ -39,7 +48,6 @@ export default {
       loading: false,
       error: null,
       person: null,
-      qr_src: ""
     }
   },
 
@@ -62,11 +70,6 @@ export default {
         this.person = value
       }
     },
-    person(value) {
-      if (value) {
-        this.generateQR(value.id)
-      }
-    }
   },
 
   methods: {
@@ -99,35 +102,29 @@ export default {
       this.loading = true
       this.error = null
 
-      let headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.$store.state.user.access}`,
-      }
-      axios.get(`http://127.0.0.1:8000/personnel/personnels/${id}/`, { headers }).then((response) => {
-        this.person = response.data
-      }).catch((error) => {
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/personnel/personnels/${id}/`,
+        )
+
+        if (!response.ok) {
+          throw new Error('Personnel introuvable')
+        }
+
+        this.person = await response.json()
+      } catch (error) {
         console.error(error)
-        this.error = "Impossible de récupérer les informations du personnel."
-      }).finally(() => {
+
+        this.error =
+          "Impossible de récupérer les informations du personnel."
+      } finally {
         this.loading = false
-      })
+      }
     },
 
     close() {
       this.$emit('close')
     },
-
-    generateQR(id){
-      let vue = this
-      QRCode.toDataURL(id, {
-        color: { dark: '#15B', light: '#ddd'},
-        align: 'center',
-      }).then(src => {
-        vue.qr_src = src
-      })
-    },
-    print(){
-    }
   },
 }
 </script>
@@ -220,79 +217,102 @@ export default {
         </div>
 
         <!-- Personnel -->
-        <div v-else-if="person" class="p-6">
-          <div class="printable overflow-auto">
-            <div class="badge">
-                <img src="/badge.jpeg" alt="badge" class="background" />
-                <img
-                  v-if="person.photo"
-                  :src="person.photo"
-                  :alt="`${person.prenom} ${person.nom}`"
-                  class="iphoto"
-                />
-                <div class="ibindi">
-                  <div class="izina">{{ person.prenom }} {{ person.nom }}</div>
-                  <div class="poste">{{ person.poste }}</div>
-                </div>
-                <div class="qr_img">
-                  <img v-show="qr_src" :src="qr_src" alt="QR Code"/>
-                </div>
+        <div
+          v-else-if="person"
+          class="p-6"
+        >
+          <!-- Photo -->
+          <div class="flex justify-center">
+            <div
+              class="h-28 w-28 overflow-hidden rounded-full border-4 border-indigo-500/20 bg-slate-800 shadow-xl"
+            >
+              <img
+                v-if="person.photo"
+                :src="person.photo"
+                :alt="`${person.prenom} ${person.nom}`"
+                class="h-full w-full object-cover"
+              />
+
+              <div
+                v-else
+                class="flex h-full w-full items-center justify-center text-slate-500"
+              >
+                <User class="h-12 w-12" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Name -->
+          <div class="mt-5 text-center">
+            <h3 class="text-2xl font-bold text-white">
+              {{ person.prenom }} {{ person.nom }}
+            </h3>
+
+            <p class="mt-1 text-sm text-indigo-400">
+              Personnel #{{ person.id.slice(0, 8) }}
+            </p>
+          </div>
+
+          <!-- Details -->
+          <div class="mt-6 space-y-3">
+            <div
+              class="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.03] p-4"
+            >
+              <Mail class="h-5 w-5 text-indigo-400" />
+
+              <div>
+                <p class="text-xs text-slate-500">
+                  Email
+                </p>
+
+                <p class="text-sm text-slate-200">
+                  {{ person.email || 'Non renseigné' }}
+                </p>
               </div>
             </div>
 
+            <div
+              class="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.03] p-4"
+            >
+              <Phone class="h-5 w-5 text-emerald-400" />
+
+              <div>
+                <p class="text-xs text-slate-500">
+                  Téléphone
+                </p>
+
+                <p class="text-sm text-slate-200">
+                  {{ person.telephone || 'Non renseigné' }}
+                </p>
+              </div>
+            </div>
+
+            <div
+              class="flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.03] p-4"
+            >
+              <BriefcaseBusiness class="h-5 w-5 text-purple-400" />
+
+              <div>
+                <p class="text-xs text-slate-500">
+                  Poste
+                </p>
+
+                <p class="text-sm text-slate-200">
+                  {{ person.poste || 'Non renseigné' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- Close -->
           <button
-            @click="print"
+            @click="close"
             class="mt-6 w-full rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 py-3.5 font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:from-indigo-400 hover:to-purple-500"
           >
-            Imprimer
+            Fermer
           </button>
         </div>
       </div>
     </div>
   </Teleport>
 </template>
-<style scoped>
-.badge {
-  position: relative;
-  height: 60vh;
-}
-.badge .background {
-  position: absolute;
-  width: 11cm;
-}
-.iphoto {
-  position: absolute;
-  top: 3.3cm;
-  left: 2.97cm;
-  width: 4.6cm;
-  height: 4.6cm;
-  border-radius: 50%;
-}
-.ibindi {
-  position: absolute;
-  top: 8.5cm;
-  width: 100%;
-  text-align: center;
-  color: white;
-}
-.izina {
-  font-size: 1.2em;
-}
-.poste {
-  font-size: .9em;
-  margin-top: 0.2em;
-}
-.qr_img {
-  position: absolute;
-  top: 10.35cm;
-  left: 3.1cm;
-  width: 4.2cm;
-  height: 4.2cm;
-  overflow: hidden;
-}
-.qr_img img {
-  width: 100%;
-  object-fit: cover;
-}
-</style>

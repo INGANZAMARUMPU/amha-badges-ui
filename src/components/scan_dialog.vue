@@ -1,5 +1,5 @@
 <script>
-// import { Html5Qrcode } from 'html5-qrcode'
+import { Html5Qrcode } from 'html5-qrcode'
 import { X, Camera, LoaderCircle } from 'lucide-vue-next'
 
 export default {
