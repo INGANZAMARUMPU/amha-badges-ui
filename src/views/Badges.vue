@@ -31,11 +31,34 @@
             </p>
           </div>
 
-          <!-- Scan button -->
-          <button @click="openScanner" class="group flex items-center justify-center gap-3 rounded bg-indigo-500 px-6 py-2 font-semibold text-white shadow-xl shadow-indigo-500/20 transition hover:scale-[1.02] hover:shadow-indigo-500/30 active:scale-[0.98]" >
-            <QrCode class="h-5 w-5 transition group-hover:rotate-6" />
-            Scan
-          </button>
+          <!-- Header Actions -->
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Print all button -->
+            <button
+              @click="openPrintAll"
+              :disabled="personnels.length === 0"
+              class="group flex items-center justify-center gap-2.5 rounded bg-white/10 hover:bg-white/15 border border-white/10 px-5 py-2 font-semibold text-white shadow-xl transition hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+              title="Générer et imprimer les badges A4 (6 personnes par page)"
+            >
+              <Printer class="h-5 w-5 text-indigo-400 transition group-hover:scale-110" />
+              <span>Print all</span>
+              <span
+                v-if="filteredPersonnels.length > 0"
+                class="ml-1 rounded-full bg-indigo-500/30 px-2 py-0.5 text-xs font-medium text-indigo-300"
+              >
+                {{ filteredPersonnels.length }}
+              </span>
+            </button>
+
+            <!-- Scan button -->
+            <button
+              @click="openScanner"
+              class="group flex items-center justify-center gap-3 rounded bg-indigo-500 px-6 py-2 font-semibold text-white shadow-xl shadow-indigo-500/20 transition hover:scale-[1.02] hover:shadow-indigo-500/30 active:scale-[0.98]"
+            >
+              <QrCode class="h-5 w-5 transition group-hover:rotate-6" />
+              Scan
+            </button>
+          </div>
         </div>
       </div>
 
@@ -180,7 +203,19 @@
   </div>
 </template>
 <script>
-import { Search, QrCode, Users, RefreshCw, Mail, Phone, BriefcaseBusiness, User, LoaderCircle, Plus } from 'lucide-vue-next'
+import {
+  Search,
+  QrCode,
+  Users,
+  RefreshCw,
+  Mail,
+  Phone,
+  BriefcaseBusiness,
+  User,
+  LoaderCircle,
+  Plus,
+  Printer
+} from 'lucide-vue-next'
 
 import ScanDialog from '@/components/scan_dialog.vue'
 import BadgeDialog from '@/components/badge_dialog.vue'
@@ -200,6 +235,7 @@ export default {
     User,
     LoaderCircle,
     Plus,
+    Printer,
     ScanDialog,
     BadgeDialog,
     PersonnelCard,
@@ -214,6 +250,7 @@ export default {
 
       showScanner: false,
       showBadge: false,
+      showPrintAll: false,
 
       scannedValue: '',
       selectedPersonnel: null,
